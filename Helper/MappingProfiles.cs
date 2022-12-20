@@ -11,6 +11,8 @@ namespace course_api.Helper {
 		public MappingProfiles() {
 			CreateMap<Course, CourseDto>();
 			CreateMap<CourseDto, Course>();
+			CreateMap<Lesson, LessonDto>();
+			CreateMap<LessonDto, Lesson>();
 		}
 	}
 }

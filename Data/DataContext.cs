@@ -11,5 +11,15 @@ namespace course_api.Data {
 		}
 
 		public DbSet<Course> Courses { get; set; }
+		public DbSet<Lesson> Lessons { get; set; }
+
+		protected override void OnModelCreating(ModelBuilder modelBuilder) {
+			modelBuilder.Entity<Course>()
+				.HasMany((course) => course.Lessons)
+				.WithOne((lesson) => lesson.Course)
+				.HasForeignKey((lesson) => lesson.CourseId);
+
+			base.OnModelCreating(modelBuilder);
+		}
 	}
 }

@@ -53,8 +53,8 @@ namespace course_api.Controllers {
 			return Ok();
 		}
 
-		[HttpPut("{courseId}")]
-		public IActionResult UpdateCourse(Guid courseId, [FromBody] CourseDto mappedCourse) {
+		[HttpPut]
+		public IActionResult UpdateCourse([FromQuery] Guid courseId, [FromBody] CourseDto mappedCourse) {
 			if (!this._courseRepository.CourseExists(courseId)) {
 				return NotFound();
 			}
