@@ -65,6 +65,31 @@ namespace courseapi.Migrations
                     b.ToTable("Lessons");
                 });
 
+            modelBuilder.Entity("course_api.Models.Recording", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("LessonId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LessonId")
+                        .IsUnique();
+
+                    b.ToTable("Recordings");
+                });
+
             modelBuilder.Entity("course_api.Models.Lesson", b =>
                 {
                     b.HasOne("course_api.Models.Course", "Course")
@@ -76,9 +101,26 @@ namespace courseapi.Migrations
                     b.Navigation("Course");
                 });
 
+            modelBuilder.Entity("course_api.Models.Recording", b =>
+                {
+                    b.HasOne("course_api.Models.Lesson", "Lesson")
+                        .WithOne("Recording")
+                        .HasForeignKey("course_api.Models.Recording", "LessonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lesson");
+                });
+
             modelBuilder.Entity("course_api.Models.Course", b =>
                 {
                     b.Navigation("Lessons");
+                });
+
+            modelBuilder.Entity("course_api.Models.Lesson", b =>
+                {
+                    b.Navigation("Recording")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

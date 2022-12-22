@@ -12,12 +12,18 @@ namespace course_api.Data {
 
 		public DbSet<Course> Courses { get; set; }
 		public DbSet<Lesson> Lessons { get; set; }
+		public DbSet<Recording> Recordings { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder) {
 			modelBuilder.Entity<Course>()
 				.HasMany((course) => course.Lessons)
 				.WithOne((lesson) => lesson.Course)
 				.HasForeignKey((lesson) => lesson.CourseId);
+
+			modelBuilder.Entity<Lesson>()
+				.HasOne((lesson) => lesson.Recording)
+				.WithOne((recording) => recording.Lesson)
+				.HasForeignKey<Recording>((recording) => recording.LessonId);
 
 			base.OnModelCreating(modelBuilder);
 		}

@@ -10,5 +10,6 @@ namespace course_api.Models {
 		public string Description { get; set; }
 		public Guid CourseId { get; set; }
 		public virtual Course Course { get; set; }
+		public virtual Recording Recording { get; set; }
 	}
 }

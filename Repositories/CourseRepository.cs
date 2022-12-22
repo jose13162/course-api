@@ -19,9 +19,7 @@ namespace course_api.Repositories {
 		}
 
 		public Course GetCourse(Guid courseId) {
-			return this._context.Courses
-				.Where((course) => course.Id == courseId)
-				.FirstOrDefault();
+			return this._context.Courses.Find(courseId);
 		}
 
 		public bool CourseExists(Guid courseId) {

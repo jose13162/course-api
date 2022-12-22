@@ -13,6 +13,8 @@ namespace course_api.Helper {
 			CreateMap<CourseDto, Course>();
 			CreateMap<Lesson, LessonDto>();
 			CreateMap<LessonDto, Lesson>();
+			CreateMap<Recording, RecordingDto>();
+			CreateMap<RecordingDto, Recording>();
 		}
 	}
 }

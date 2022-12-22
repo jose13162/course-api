@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using course_api.Data;
 using course_api.Interface;
 using course_api.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace course_api.Repositories {
 	public class LessonRepository : ILessonRepository {
@@ -16,14 +17,16 @@ namespace course_api.Repositories {
 
 		public ICollection<Lesson> GetLessons(Guid courseId) {
 			return this._context.Lessons
+				.Include((lesson) => lesson.Recording)
 				.Where((lesson) => lesson.CourseId == courseId)
 				.ToList();
 		}
 
 		public Lesson GetLesson(Guid lessonId) {
 			return this._context.Lessons
-				.Where((lesson) => lesson.Id == lessonId)
-				.FirstOrDefault();
+			.Include((lesson) => lesson.Recording)
+			.Where((lesson) => lesson.Id == lessonId)
+			.FirstOrDefault();
 		}
 
 		public bool LessonExists(Guid lessonId) {
