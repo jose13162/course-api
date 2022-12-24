@@ -12,6 +12,10 @@ namespace course_api.Interface {
 		bool CreateCourse(Course course);
 		bool UpdateCourse(Course course);
 		bool DeleteCourse(Course course);
+		CourseCategory GetCourseCategory(Course course, Guid categoryId);
+		bool HasCategory(Course course, Guid categoryId);
+		bool AddCategory(CourseCategory courseCategory);
+		bool RemoveCategory(CourseCategory courseCategory);
 		bool Save();
 	}
-}
+} 

@@ -73,7 +73,7 @@ namespace course_api.Controllers {
 		[HttpPut]
 		public IActionResult UpdateLesson([FromQuery] Guid lessonId, [FromQuery] Guid courseId, [FromBody] LessonDto lesson) {
 			if (lessonId != lesson.Id) {
-				ModelState.AddModelError("", "The lessonId from query is different from the body id");
+				ModelState.AddModelError("", "The lessonId from query does not match the body id");
 
 				return BadRequest(ModelState);
 			}

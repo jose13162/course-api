@@ -14,10 +14,12 @@ namespace course_api.Controllers {
 	public class CourseController : Controller {
 		private readonly IMapper _mapper;
 		private readonly ICourseRepository _courseRepository;
+		private readonly ICategoryRepository _categoryRepository;
 
-		public CourseController(IMapper mapper, ICourseRepository courseRepository) {
+		public CourseController(IMapper mapper, ICourseRepository courseRepository, ICategoryRepository categoryRepository) {
 			this._mapper = mapper;
 			this._courseRepository = courseRepository;
+			this._categoryRepository = categoryRepository;
 		}
 
 		[HttpGet]
@@ -41,10 +43,10 @@ namespace course_api.Controllers {
 		}
 
 		[HttpPost]
-		public IActionResult CreateCourse([FromBody] CourseDto mappedCourse) {
-			var course = this._mapper.Map<Course>(mappedCourse);
+		public IActionResult CreateCourse([FromBody] CourseDto course) {
+			var mappedCourse = this._mapper.Map<Course>(course);
 
-			if (!this._courseRepository.CreateCourse(course)) {
+			if (!this._courseRepository.CreateCourse(mappedCourse)) {
 				ModelState.AddModelError("", "Something went wrong saving the course");
 
 				return BadRequest(ModelState);
@@ -54,14 +56,22 @@ namespace course_api.Controllers {
 		}
 
 		[HttpPut]
-		public IActionResult UpdateCourse([FromQuery] Guid courseId, [FromBody] CourseDto mappedCourse) {
-			if (!this._courseRepository.CourseExists(courseId)) {
-				return NotFound();
+		public IActionResult UpdateCourse([FromQuery] Guid courseId, [FromBody] CourseDto course) {
+			if (courseId != course.Id) {
+				ModelState.AddModelError("", "The lessonId from query does not match the body id");
+
+				return BadRequest(ModelState);
 			}
 
-			var course = this._mapper.Map<Course>(mappedCourse);
+			if (!this._courseRepository.CourseExists(courseId)) {
+				ModelState.AddModelError("", "The course does not exist");
 
-			if (!this._courseRepository.UpdateCourse(course)) {
+				return NotFound(ModelState);
+			}
+
+			var mappedCourse = this._mapper.Map<Course>(course);
+
+			if (!this._courseRepository.UpdateCourse(mappedCourse)) {
 				ModelState.AddModelError("", "Something went wrong updating the course");
 
 				return BadRequest(ModelState);
@@ -80,6 +90,62 @@ namespace course_api.Controllers {
 
 			if (!this._courseRepository.DeleteCourse(course)) {
 				ModelState.AddModelError("", "Something went wrong deleting the course");
+
+				return BadRequest(ModelState);
+			}
+
+			return Ok();
+		}
+
+		[HttpPost("categories")]
+		public IActionResult AddCategory(Guid courseId, Guid categoryId) {
+			if (!this._courseRepository.CourseExists(courseId)) {
+				ModelState.AddModelError("", "The course does not exist");
+
+				return NotFound(ModelState);
+			}
+
+			if (!this._categoryRepository.CategoryExists(categoryId)) {
+				ModelState.AddModelError("", "The category does not exist");
+
+				return NotFound(ModelState);
+			}
+
+			var course = this._courseRepository.GetCourse(courseId);
+			var category = this._categoryRepository.GetCategory(categoryId);
+			var courseCategory = new CourseCategory() {
+				Course = course,
+				Category = category
+			};
+
+			if (!this._courseRepository.AddCategory(courseCategory)) {
+				ModelState.AddModelError("", "Something went wrong adding the category to the course");
+
+				return BadRequest(ModelState);
+			}
+
+			return Ok();
+		}
+
+		[HttpDelete("categories")]
+		public IActionResult RemoveCategory([FromQuery] Guid courseId, [FromQuery] Guid categoryId) {
+			if (!this._courseRepository.CourseExists(courseId)) {
+				ModelState.AddModelError("", "The course does not exist");
+
+				return NotFound(ModelState);
+			}
+
+			if (!this._categoryRepository.CategoryExists(categoryId)) {
+				ModelState.AddModelError("", "The category does not exist");
+
+				return NotFound(ModelState);
+			}
+
+			var course = this._courseRepository.GetCourse(courseId);
+			var courseCategory = this._courseRepository.GetCourseCategory(course, categoryId);
+
+			if (!this._courseRepository.RemoveCategory(courseCategory)) {
+				ModelState.AddModelError("", "Something went wrong adding the category to the course");
 
 				return BadRequest(ModelState);
 			}
