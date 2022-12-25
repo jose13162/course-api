@@ -10,5 +10,6 @@ namespace course_api.Models {
 		public string Description { get; set; }
 		public virtual ICollection<Lesson> Lessons { get; set; }
 		public virtual ICollection<CourseCategory> CourseCategories { get; set; }
+		public virtual Cover Cover { get; set; }
 	}
 }

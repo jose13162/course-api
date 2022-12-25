@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace courseapi.Migrations
 {
     /// <inheritdoc />
-    public partial class Main : Migration
+    public partial class AddCover : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -21,6 +21,26 @@ namespace courseapi.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Categories", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Covers",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CourseId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Filename = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Url = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Covers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Covers_Courses_CourseId",
+                        column: x => x.CourseId,
+                        principalTable: "Courses",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -51,6 +71,12 @@ namespace courseapi.Migrations
                 name: "IX_CourseCategories_CategoryId",
                 table: "CourseCategories",
                 column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Covers_CourseId",
+                table: "Covers",
+                column: "CourseId",
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -58,6 +84,9 @@ namespace courseapi.Migrations
         {
             migrationBuilder.DropTable(
                 name: "CourseCategories");
+
+            migrationBuilder.DropTable(
+                name: "Covers");
 
             migrationBuilder.DropTable(
                 name: "Categories");

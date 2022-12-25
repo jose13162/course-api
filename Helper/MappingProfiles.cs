@@ -35,6 +35,8 @@ namespace course_api.Helper {
 					)
 				); ;
 			CreateMap<CategoryDto, Category>();
+			CreateMap<Cover, CoverDto>();
+			CreateMap<CoverDto, Cover>();
 		}
 	}
 }

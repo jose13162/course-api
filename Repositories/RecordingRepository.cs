@@ -28,12 +28,6 @@ namespace course_api.Repositories {
 			return this.Save();
 		}
 
-		public bool UpdateRecording(Recording recording) {
-			this._context.Recordings.Update(recording);
-
-			return this.Save();
-		}
-
 		public bool DeleteRecording(Recording recording) {
 			this._context.Recordings.Remove(recording);
 

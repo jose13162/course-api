@@ -9,7 +9,6 @@ namespace course_api.Interface {
 		Recording GetRecording(Guid recordingId);
 		bool RecordingExists(Guid recordingId);
 		bool CreateRecording(Recording recording);
-		bool UpdateRecording(Recording recording);
 		bool DeleteRecording(Recording recording);
 		bool Save();
 	}

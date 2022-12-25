@@ -12,8 +12,8 @@ using course_api.Data;
 namespace courseapi.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20221223233700_Main")]
-    partial class Main
+    [Migration("20221225224350_AddCover")]
+    partial class AddCover
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -72,6 +72,31 @@ namespace courseapi.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("CourseCategories");
+                });
+
+            modelBuilder.Entity("course_api.Models.Cover", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Filename")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId")
+                        .IsUnique();
+
+                    b.ToTable("Covers");
                 });
 
             modelBuilder.Entity("course_api.Models.Lesson", b =>
@@ -142,6 +167,17 @@ namespace courseapi.Migrations
                     b.Navigation("Course");
                 });
 
+            modelBuilder.Entity("course_api.Models.Cover", b =>
+                {
+                    b.HasOne("course_api.Models.Course", "Course")
+                        .WithOne("Cover")
+                        .HasForeignKey("course_api.Models.Cover", "CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+                });
+
             modelBuilder.Entity("course_api.Models.Lesson", b =>
                 {
                     b.HasOne("course_api.Models.Course", "Course")
@@ -172,6 +208,9 @@ namespace courseapi.Migrations
             modelBuilder.Entity("course_api.Models.Course", b =>
                 {
                     b.Navigation("CourseCategories");
+
+                    b.Navigation("Cover")
+                        .IsRequired();
 
                     b.Navigation("Lessons");
                 });

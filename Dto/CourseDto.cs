@@ -10,5 +10,6 @@ namespace course_api.Dto {
 		public string Title { get; set; }
 		public string Description { get; set; }
 		public ICollection<CategoryDto>? Categories { get; set; }
+		public CoverDto? Cover { get; set; }
 	}
 }

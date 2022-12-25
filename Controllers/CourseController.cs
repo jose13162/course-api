@@ -13,13 +13,17 @@ namespace course_api.Controllers {
 	[ApiController]
 	public class CourseController : Controller {
 		private readonly IMapper _mapper;
+		private readonly IFileUploader _fileUploader;
 		private readonly ICourseRepository _courseRepository;
 		private readonly ICategoryRepository _categoryRepository;
+		private readonly ICoverRepository _coverRepository;
 
-		public CourseController(IMapper mapper, ICourseRepository courseRepository, ICategoryRepository categoryRepository) {
+		public CourseController(IMapper mapper, IFileUploader fileUploader, ICourseRepository courseRepository, ICategoryRepository categoryRepository, ICoverRepository coverRepository) {
 			this._mapper = mapper;
+			this._fileUploader = fileUploader;
 			this._courseRepository = courseRepository;
 			this._categoryRepository = categoryRepository;
+			this._coverRepository = coverRepository;
 		}
 
 		[HttpGet]
@@ -94,6 +98,10 @@ namespace course_api.Controllers {
 				return BadRequest(ModelState);
 			}
 
+			if (course.Cover != null) {
+				this._fileUploader.Delete(course.Cover.Filename);
+			}
+
 			return Ok();
 		}
 
@@ -149,6 +157,57 @@ namespace course_api.Controllers {
 
 				return BadRequest(ModelState);
 			}
+
+			return Ok();
+		}
+
+		[HttpPost("cover")]
+		public IActionResult CreateCover([FromQuery] Guid courseId, IFormFile coverFile) {
+			if (!this._courseRepository.CourseExists(courseId)) {
+				ModelState.AddModelError("", "The course does not exist");
+
+				return NotFound(ModelState);
+			}
+
+			var course = this._courseRepository.GetCourse(courseId);
+
+			if (course.Cover != null) {
+				this._fileUploader.Delete(course.Cover.Filename);
+			}
+
+			var (fileName, url) = this._fileUploader.Upload(coverFile);
+			var cover = new Cover() {
+				Filename = fileName,
+				Url = url
+			};
+			cover.Course = course;
+
+			if (!this._coverRepository.CreateCover(cover)) {
+				ModelState.AddModelError("", "Something went wrong saving the cover");
+
+				return BadRequest(ModelState);
+			}
+
+			return Ok();
+		}
+
+		[HttpDelete("cover/{coverId}")]
+		public IActionResult DeleteCover(Guid coverId) {
+			if (!this._coverRepository.CoverExists(coverId)) {
+				ModelState.AddModelError("", "The cover does not exist");
+
+				return NotFound(ModelState);
+			}
+
+			var cover = this._coverRepository.GetCover(coverId);
+
+			if (!this._coverRepository.DeleteCover(cover)) {
+				ModelState.AddModelError("", "Something went wrong deleting the cover");
+
+				return BadRequest(ModelState);
+			}
+
+			this._fileUploader.Delete(cover.Filename);
 
 			return Ok();
 		}

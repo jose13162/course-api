@@ -16,34 +16,20 @@ namespace course_api.Repositories {
 		}
 
 		public ICollection<Course> GetCourses() {
-			var courses = this._context.Courses
+			return this._context.Courses
 				.Include((course) => course.CourseCategories)
+				.ThenInclude((courseCategory) => courseCategory.Category)
+				.Include((course) => course.Cover)
 				.ToList();
-
-			courses.ForEach((course) => {
-				course.CourseCategories.ToList().ForEach((courseCategory) => {
-					this._context.Entry(courseCategory)
-						.Reference((courseCategory) => courseCategory.Category)
-						.Load();
-				});
-			});
-
-			return courses;
 		}
 
 		public Course GetCourse(Guid courseId) {
-			var course = this._context.Courses
+			return this._context.Courses
 				.Include((course) => course.CourseCategories)
+				.ThenInclude((courseCategory) => courseCategory.Category)
+				.Include((course) => course.Cover)
 				.Where((course) => course.Id == courseId)
 				.FirstOrDefault();
-
-			course.CourseCategories.ToList().ForEach((courseCategory) => {
-				this._context.Entry(courseCategory)
-					.Reference((courseCategory) => courseCategory.Category)
-					.Load();
-			});
-
-			return course;
 		}
 
 		public bool CourseExists(Guid courseId) {

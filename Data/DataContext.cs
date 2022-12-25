@@ -15,6 +15,7 @@ namespace course_api.Data {
 		public DbSet<Recording> Recordings { get; set; }
 		public DbSet<Category> Categories { get; set; }
 		public DbSet<CourseCategory> CourseCategories { get; set; }
+		public DbSet<Cover> Covers { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder) {
 			modelBuilder.Entity<Course>()
@@ -22,12 +23,18 @@ namespace course_api.Data {
 				.WithOne((lesson) => lesson.Course)
 				.HasForeignKey((lesson) => lesson.CourseId)
 				.OnDelete(DeleteBehavior.Cascade);
+			modelBuilder.Entity<Course>()
+				.HasOne((course) => course.Cover)
+				.WithOne((cover) => cover.Course)
+				.HasForeignKey<Cover>((cover) => cover.CourseId)
+				.OnDelete(DeleteBehavior.Cascade);
 
 			modelBuilder.Entity<Lesson>()
 				.HasOne((lesson) => lesson.Recording)
 				.WithOne((recording) => recording.Lesson)
-				.HasForeignKey<Recording>((recording) => recording.LessonId);
-				
+				.HasForeignKey<Recording>((recording) => recording.LessonId)
+				.OnDelete(DeleteBehavior.Cascade);
+
 			modelBuilder.Entity<CourseCategory>()
 				.HasKey((courseCategory) => new { courseCategory.CourseId, courseCategory.CategoryId });
 			modelBuilder.Entity<CourseCategory>()

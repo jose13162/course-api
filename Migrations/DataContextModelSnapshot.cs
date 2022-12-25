@@ -71,6 +71,31 @@ namespace courseapi.Migrations
                     b.ToTable("CourseCategories");
                 });
 
+            modelBuilder.Entity("course_api.Models.Cover", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Filename")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId")
+                        .IsUnique();
+
+                    b.ToTable("Covers");
+                });
+
             modelBuilder.Entity("course_api.Models.Lesson", b =>
                 {
                     b.Property<Guid>("Id")
@@ -139,6 +164,17 @@ namespace courseapi.Migrations
                     b.Navigation("Course");
                 });
 
+            modelBuilder.Entity("course_api.Models.Cover", b =>
+                {
+                    b.HasOne("course_api.Models.Course", "Course")
+                        .WithOne("Cover")
+                        .HasForeignKey("course_api.Models.Cover", "CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+                });
+
             modelBuilder.Entity("course_api.Models.Lesson", b =>
                 {
                     b.HasOne("course_api.Models.Course", "Course")
@@ -169,6 +205,9 @@ namespace courseapi.Migrations
             modelBuilder.Entity("course_api.Models.Course", b =>
                 {
                     b.Navigation("CourseCategories");
+
+                    b.Navigation("Cover")
+                        .IsRequired();
 
                     b.Navigation("Lessons");
                 });

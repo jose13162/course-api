@@ -13,17 +13,21 @@ namespace course_api.Controllers {
 	[ApiController]
 	public class LessonController : Controller {
 		private readonly IMapper _mapper;
+		private readonly IFileUploader _fileUploader;
 		private readonly ILessonRepository _lessonRepository;
 		private readonly ICourseRepository _courseRepository;
+		private readonly IRecordingRepository _recordingRepository;
 
-		public LessonController(IMapper mapper, ILessonRepository lessonRepository, ICourseRepository courseRepository) {
+		public LessonController(IMapper mapper, IFileUploader fileUploader, ILessonRepository lessonRepository, ICourseRepository courseRepository, IRecordingRepository recordingRepository) {
 			this._mapper = mapper;
+			this._fileUploader = fileUploader;
 			this._lessonRepository = lessonRepository;
 			this._courseRepository = courseRepository;
+			this._recordingRepository = recordingRepository;
 		}
 
-		[HttpGet("course/{courseId}")]
-		public IActionResult GetLessons(Guid courseId) {
+		[HttpGet]
+		public IActionResult GetLessons([FromQuery] Guid courseId) {
 			if (!this._courseRepository.CourseExists(courseId)) {
 				ModelState.AddModelError("", "The course does not exist");
 
@@ -50,8 +54,8 @@ namespace course_api.Controllers {
 			return Ok(mappedLesson);
 		}
 
-		[HttpPost("course/{courseId}")]
-		public IActionResult CreateLesson(Guid courseId, [FromBody] LessonDto lesson) {
+		[HttpPost]
+		public IActionResult CreateLesson([FromQuery] Guid courseId, [FromBody] LessonDto lesson) {
 			if (!this._courseRepository.CourseExists(courseId)) {
 				ModelState.AddModelError("", "The course does not exist");
 
@@ -117,6 +121,61 @@ namespace course_api.Controllers {
 
 				return BadRequest(ModelState);
 			}
+
+			if (lesson.Recording != null) {
+				this._fileUploader.Delete(lesson.Recording.FileName);
+			}
+
+			return Ok();
+		}
+
+		[HttpPost("recordings")]
+		public IActionResult CreateRecording([FromQuery] Guid lessonId, IFormFile recordingFile) {
+			if (!this._lessonRepository.LessonExists(lessonId)) {
+				ModelState.AddModelError("", "The lesson does not exist");
+
+				return NotFound(ModelState);
+			}
+
+			var lesson = this._lessonRepository.GetLesson(lessonId);
+
+			if (lesson.Recording != null) {
+				this._fileUploader.Delete(lesson.Recording.FileName);
+			}
+
+			var (fileName, url) = this._fileUploader.Upload(recordingFile);
+			var recording = new Recording() {
+				FileName = fileName,
+				Url = url,
+			};
+			recording.Lesson = this._lessonRepository.GetLesson(lessonId);
+
+			if (!this._recordingRepository.CreateRecording(recording)) {
+				ModelState.AddModelError("", "Something went wrong saving the recording");
+
+				return BadRequest(ModelState);
+			}
+
+			return Ok();
+		}
+
+		[HttpDelete("recordings/{recordingId}")]
+		public IActionResult DeleteRecording(Guid recordingId) {
+			if (!this._recordingRepository.RecordingExists(recordingId)) {
+				ModelState.AddModelError("", "The recording does not exist");
+
+				return NotFound(ModelState);
+			}
+
+			var recording = this._recordingRepository.GetRecording(recordingId);
+
+			if (!this._recordingRepository.DeleteRecording(recording)) {
+				ModelState.AddModelError("", "Something went wrong deleting the recording");
+
+				return BadRequest(ModelState);
+			}
+
+			this._fileUploader.Delete(recording.FileName);
 
 			return Ok();
 		}
