@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using course_api.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace course_api.Data {
-	public class DataContext : DbContext {
+	public class DataContext : IdentityDbContext<ApplicationUser> {
 		public DataContext(DbContextOptions options) : base(options) {
 		}
 
@@ -16,6 +17,7 @@ namespace course_api.Data {
 		public DbSet<Category> Categories { get; set; }
 		public DbSet<CourseCategory> CourseCategories { get; set; }
 		public DbSet<Cover> Covers { get; set; }
+		public DbSet<ApplicationUser> ApplicationUsers { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder) {
 			modelBuilder.Entity<Course>()
