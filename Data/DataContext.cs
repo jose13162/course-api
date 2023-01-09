@@ -18,6 +18,7 @@ namespace course_api.Data {
 		public DbSet<CourseCategory> CourseCategories { get; set; }
 		public DbSet<Cover> Covers { get; set; }
 		public DbSet<ApplicationUser> ApplicationUsers { get; set; }
+		public DbSet<Avatar> Avatars { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder) {
 			modelBuilder.Entity<Course>()
@@ -47,6 +48,12 @@ namespace course_api.Data {
 				.HasOne((courseCategory) => courseCategory.Category)
 				.WithMany((category) => category.CourseCategories)
 				.HasForeignKey((courseCategory) => courseCategory.CategoryId);
+
+			modelBuilder.Entity<ApplicationUser>()
+				.HasOne((user) => user.Avatar)
+				.WithOne((avatar) => avatar.User)
+				.HasForeignKey<Avatar>((avatar) => avatar.UserId)
+				.OnDelete(DeleteBehavior.Cascade);
 
 			base.OnModelCreating(modelBuilder);
 		}

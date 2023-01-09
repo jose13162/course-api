@@ -147,8 +147,8 @@ namespace course_api.Controllers {
 			var recording = new Recording() {
 				FileName = fileName,
 				Url = url,
+				Lesson = lesson
 			};
-			recording.Lesson = this._lessonRepository.GetLesson(lessonId);
 
 			if (!this._recordingRepository.CreateRecording(recording)) {
 				ModelState.AddModelError("", "Something went wrong saving the recording");

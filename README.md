@@ -33,10 +33,11 @@ Tabela de conteúdos
 <h3>Features</h3>
 
 - [x] Cadastro de usuário
-- [ ] Autenticação
+- [x] Autenticação
+- [ ] Recursos do administrador
 - [ ] Recuperação de senha
-- [ ] Upload de avatar
-- [ ] Perfil do usuário
+- [x] Upload de avatar
+- [x] Perfil do usuário
 - [x] CRUD de cursos
 - [x] CRUD de aulas
 - [x] Categorias

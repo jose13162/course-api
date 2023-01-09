@@ -37,6 +37,10 @@ namespace course_api.Helper {
 			CreateMap<CategoryDto, Category>();
 			CreateMap<Cover, CoverDto>();
 			CreateMap<CoverDto, Cover>();
+			CreateMap<ApplicationUser, ApplicationUserDto>();
+			CreateMap<ApplicationUserDto, ApplicationUser>();
+			CreateMap<Avatar, AvatarDto>();
+			CreateMap<AvatarDto, Avatar>();
 		}
 	}
 }

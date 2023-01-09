@@ -4,11 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace course_api.Models {
-	public class Cover {
+	public class Avatar {
 		public Guid Id { get; set; }
-		public Guid CourseId { get; set; }
+		public string UserId { get; set; }
 		public string FileName { get; set; }
 		public string Url { get; set; }
-		public virtual Course Course { get; set; }
+		public virtual ApplicationUser User { get; set; }
 	}
 }

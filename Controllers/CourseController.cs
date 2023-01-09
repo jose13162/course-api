@@ -99,7 +99,7 @@ namespace course_api.Controllers {
 			}
 
 			if (course.Cover != null) {
-				this._fileUploader.Delete(course.Cover.Filename);
+				this._fileUploader.Delete(course.Cover.FileName);
 			}
 
 			return Ok();
@@ -172,12 +172,12 @@ namespace course_api.Controllers {
 			var course = this._courseRepository.GetCourse(courseId);
 
 			if (course.Cover != null) {
-				this._fileUploader.Delete(course.Cover.Filename);
+				this._fileUploader.Delete(course.Cover.FileName);
 			}
 
 			var (fileName, url) = this._fileUploader.Upload(coverFile);
 			var cover = new Cover() {
-				Filename = fileName,
+				FileName = fileName,
 				Url = url
 			};
 			cover.Course = course;
@@ -207,7 +207,7 @@ namespace course_api.Controllers {
 				return BadRequest(ModelState);
 			}
 
-			this._fileUploader.Delete(cover.Filename);
+			this._fileUploader.Delete(cover.FileName);
 
 			return Ok();
 		}

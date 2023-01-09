@@ -228,6 +228,32 @@ namespace courseapi.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("course_api.Models.Avatar", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Filename")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Avatars");
+                });
+
             modelBuilder.Entity("course_api.Models.Category", b =>
                 {
                     b.Property<Guid>("Id")
@@ -402,6 +428,17 @@ namespace courseapi.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("course_api.Models.Avatar", b =>
+                {
+                    b.HasOne("course_api.Models.ApplicationUser", "User")
+                        .WithOne("Avatar")
+                        .HasForeignKey("course_api.Models.Avatar", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("course_api.Models.CourseCategory", b =>
                 {
                     b.HasOne("course_api.Models.Category", "Category")
@@ -452,6 +489,12 @@ namespace courseapi.Migrations
                         .IsRequired();
 
                     b.Navigation("Lesson");
+                });
+
+            modelBuilder.Entity("course_api.Models.ApplicationUser", b =>
+                {
+                    b.Navigation("Avatar")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("course_api.Models.Category", b =>

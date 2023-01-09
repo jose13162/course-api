@@ -7,9 +7,12 @@ using System.Net.Mail;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
+using course_api.Dto;
 using course_api.Interface;
 using course_api.Models;
 using course_api.Validators.User;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -19,14 +22,20 @@ namespace course_api.Controllers {
 	[Route("api/[controller]")]
 	[ApiController]
 	public class UserController : Controller {
+		private readonly IMapper _mapper;
 		private readonly IConfiguration _configuration;
 		private readonly IEmailSender _emailSender;
+		private readonly IFileUploader _fileUploader;
 		private UserManager<ApplicationUser> _userManager;
+		private readonly IAvatarRepository _avatarRepository;
 
-		public UserController(IConfiguration configuration, IEmailSender emailSender, UserManager<ApplicationUser> userManager) {
+		public UserController(IMapper mapper, IConfiguration configuration, IEmailSender emailSender, IFileUploader fileUploader, UserManager<ApplicationUser> userManager, IAvatarRepository avatarRepository) {
+			this._mapper = mapper;
 			this._configuration = configuration;
 			this._emailSender = emailSender;
+			this._fileUploader = fileUploader;
 			this._userManager = userManager;
+			this._avatarRepository = avatarRepository;
 		}
 
 		[HttpPost("register")]
@@ -98,7 +107,7 @@ namespace course_api.Controllers {
 			}
 
 			var claims = new ClaimsIdentity();
-			claims.AddClaim(new Claim("Id", user.Id));
+			claims.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
 			claims.AddClaim(new Claim(ClaimTypes.Email, user.Email));
 
 			var key = Encoding.UTF8.GetBytes(this._configuration.GetValue<string>("Jwt:Secret"));
@@ -120,6 +129,87 @@ namespace course_api.Controllers {
 			return Ok(new {
 				token = stringToken
 			});
+		}
+
+		[HttpPut]
+		[Authorize]
+		public async Task<IActionResult> UpdateAuthenticatedUser([FromBody] UpdateProfileValidator body) {
+			var user = await this._userManager.GetUserAsync(User);
+
+			if (!string.IsNullOrEmpty(body.Username)) {
+				user.UserName = body.Username;
+			}
+
+			if (!string.IsNullOrEmpty(body.FirstName)) {
+				user.FirstName = body.FirstName;
+			}
+
+			if (!string.IsNullOrEmpty(body.LastName)) {
+				user.LastName = body.LastName;
+			}
+
+			var result = await this._userManager.UpdateAsync(user);
+
+			if (!result.Succeeded) {
+				return StatusCode(500, result);
+			}
+
+			var mappedUser = this._mapper.Map<ApplicationUserDto>(user);
+
+			return Ok(mappedUser);
+		}
+
+		[HttpGet]
+		[Authorize]
+		public async Task<IActionResult> GetAuthenticatedUser() {
+			var user = await this._userManager.GetUserAsync(User);
+			this._avatarRepository.LoadAvatarFromUser(user);
+			var mappedUser = this._mapper.Map<ApplicationUserDto>(user);
+
+			return Ok(mappedUser);
+		}
+
+		[HttpPost("avatar")]
+		[Authorize]
+		public async Task<IActionResult> SetAvatar(IFormFile avatarFile) {
+			var user = await this._userManager.GetUserAsync(User);
+			var (fileName, url) = this._fileUploader.Upload(avatarFile);
+			var avatar = new Avatar() {
+				FileName = fileName,
+				Url = url,
+				User = user
+			};
+
+			var existingAvatar = this._avatarRepository.GetAvatarFromUser(user);
+
+			if (existingAvatar != null) {
+				this._fileUploader.Delete(existingAvatar.FileName);
+			}
+
+			if (!this._avatarRepository.CreateAvatar(avatar)) {
+				ModelState.AddModelError("", "Something went wrong creating the avatar");
+
+				return BadRequest(ModelState);
+			}
+
+			return Ok();
+		}
+
+		[HttpDelete("avatar")]
+		[Authorize]
+		public async Task<IActionResult> DeleteAvatar() {
+			var user = await this._userManager.GetUserAsync(User);
+			var avatar = this._avatarRepository.GetAvatarFromUser(user);
+
+			if (!this._avatarRepository.DeleteAvatar(avatar)) {
+				ModelState.AddModelError("", "Something went wrong deleting the avatar");
+
+				return BadRequest(ModelState);
+			}
+
+			this._fileUploader.Delete(avatar.FileName);
+
+			return Ok();
 		}
 	}
 }
