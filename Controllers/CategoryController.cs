@@ -6,6 +6,7 @@ using AutoMapper;
 using course_api.Dto;
 using course_api.Interface;
 using course_api.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace course_api.Controllers {
@@ -21,6 +22,7 @@ namespace course_api.Controllers {
 		}
 
 		[HttpGet]
+		[Authorize(AuthenticationSchemes = "Bearer")]
 		public IActionResult GetCategories() {
 			var categories = this._categoryRepository.GetCategories();
 			var mappedCategories = this._mapper.Map<ICollection<CategoryDto>>(categories);
@@ -29,6 +31,7 @@ namespace course_api.Controllers {
 		}
 
 		[HttpGet("{categoryId}")]
+		[Authorize(AuthenticationSchemes = "Bearer")]
 		public IActionResult GetCategory(Guid categoryId) {
 			if (!this._categoryRepository.CategoryExists(categoryId)) {
 				ModelState.AddModelError("", "The category does not exist");
@@ -43,6 +46,7 @@ namespace course_api.Controllers {
 		}
 
 		[HttpPost]
+		[Authorize(Roles = "Admin", AuthenticationSchemes = "Bearer")]
 		public IActionResult CreateCategory([FromBody] CategoryDto category) {
 			var mappedCategory = this._mapper.Map<Category>(category);
 			var existingCategory = this._categoryRepository.GetCategoryByName(category.Name);
@@ -63,6 +67,7 @@ namespace course_api.Controllers {
 		}
 
 		[HttpPut]
+		[Authorize(Roles = "Admin", AuthenticationSchemes = "Bearer")]
 		public IActionResult UpdateCategory([FromQuery] Guid categoryId, [FromBody] CategoryDto category) {
 			if (categoryId != category.Id) {
 				ModelState.AddModelError("", "The categoryId from query does not match the body id");
@@ -94,6 +99,7 @@ namespace course_api.Controllers {
 		}
 
 		[HttpDelete("{categoryId}")]
+		[Authorize(Roles = "Admin", AuthenticationSchemes = "Bearer")]
 		public IActionResult DeleteCategory(Guid categoryId) {
 			if (!this._categoryRepository.CategoryExists(categoryId)) {
 				ModelState.AddModelError("", "The category does not exist");

@@ -26,19 +26,22 @@ namespace course_api.Controllers {
 		private readonly IConfiguration _configuration;
 		private readonly IEmailSender _emailSender;
 		private readonly IFileUploader _fileUploader;
-		private UserManager<ApplicationUser> _userManager;
+		private readonly UserManager<ApplicationUser> _userManager;
+		private readonly RoleManager<IdentityRole> _roleManager;
 		private readonly IAvatarRepository _avatarRepository;
 
-		public UserController(IMapper mapper, IConfiguration configuration, IEmailSender emailSender, IFileUploader fileUploader, UserManager<ApplicationUser> userManager, IAvatarRepository avatarRepository) {
+		public UserController(IMapper mapper, IConfiguration configuration, IEmailSender emailSender, IFileUploader fileUploader, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IAvatarRepository avatarRepository) {
 			this._mapper = mapper;
 			this._configuration = configuration;
 			this._emailSender = emailSender;
 			this._fileUploader = fileUploader;
 			this._userManager = userManager;
+			this._roleManager = roleManager;
 			this._avatarRepository = avatarRepository;
 		}
 
 		[HttpPost("register")]
+		[AllowAnonymous]
 		public async Task<IActionResult> Register([FromBody] RegisterValidator body) {
 			var user = new ApplicationUser();
 			user.Email = body.Email;
@@ -50,6 +53,26 @@ namespace course_api.Controllers {
 
 			if (!result.Succeeded) {
 				return BadRequest(result.Errors);
+			}
+
+			var roleExists = await this._roleManager.RoleExistsAsync(body.Role);
+
+			if (!roleExists) {
+				var identityRole = new IdentityRole() {
+					Name = body.Role,
+					NormalizedName = body.Role.Normalize()
+				};
+				var createRoleResult = await this._roleManager.CreateAsync(identityRole);
+
+				if (!createRoleResult.Succeeded) {
+					return StatusCode(StatusCodes.Status500InternalServerError);
+				}
+			}
+
+			var addToRoleResult = await this._userManager.AddToRoleAsync(user, body.Role);
+
+			if (!addToRoleResult.Succeeded) {
+				return StatusCode(StatusCodes.Status500InternalServerError);
 			}
 
 			var token = await this._userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -74,6 +97,7 @@ namespace course_api.Controllers {
 		}
 
 		[HttpGet("confirm-email")]
+		[AllowAnonymous]
 		public async Task<IActionResult> ConfirmEmail(string userId, string token) {
 			var user = await this._userManager.FindByIdAsync(userId);
 			var result = await this._userManager.ConfirmEmailAsync(user, token);
@@ -88,6 +112,7 @@ namespace course_api.Controllers {
 		}
 
 		[HttpPost("login")]
+		[AllowAnonymous]
 		public async Task<IActionResult> Login([FromBody] LoginValidator body) {
 			var user = await this._userManager.FindByEmailAsync(body.Email);
 			var isEmailConfirmed = await this._userManager.IsEmailConfirmedAsync(user);
@@ -106,8 +131,11 @@ namespace course_api.Controllers {
 				return StatusCode(403, ModelState);
 			}
 
+			var roles = await this._userManager.GetRolesAsync(user);
+			var role = roles.FirstOrDefault();
 			var claims = new ClaimsIdentity();
 			claims.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
+			claims.AddClaim(new Claim(ClaimTypes.Role, role));
 			claims.AddClaim(new Claim(ClaimTypes.Email, user.Email));
 
 			var key = Encoding.UTF8.GetBytes(this._configuration.GetValue<string>("Jwt:Secret"));
@@ -199,7 +227,7 @@ namespace course_api.Controllers {
 		[Authorize]
 		public async Task<IActionResult> DeleteAvatar() {
 			var user = await this._userManager.GetUserAsync(User);
-			var avatar = this._avatarRepository.GetAvatarFromUser(user);
+			var avatar = this._avatarRepository.GetAvatarFromUser(user)!;
 
 			if (!this._avatarRepository.DeleteAvatar(avatar)) {
 				ModelState.AddModelError("", "Something went wrong deleting the avatar");

@@ -6,6 +6,7 @@ using AutoMapper;
 using course_api.Dto;
 using course_api.Interface;
 using course_api.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace course_api.Controllers {
@@ -27,6 +28,7 @@ namespace course_api.Controllers {
 		}
 
 		[HttpGet]
+		[Authorize]
 		public IActionResult GetLessons([FromQuery] Guid courseId) {
 			if (!this._courseRepository.CourseExists(courseId)) {
 				ModelState.AddModelError("", "The course does not exist");
@@ -41,6 +43,7 @@ namespace course_api.Controllers {
 		}
 
 		[HttpGet("{lessonId}")]
+		[Authorize]
 		public IActionResult GetLesson(Guid lessonId) {
 			if (!this._lessonRepository.LessonExists(lessonId)) {
 				ModelState.AddModelError("", "The lesson does not exist");
@@ -55,6 +58,7 @@ namespace course_api.Controllers {
 		}
 
 		[HttpPost]
+		[Authorize(Roles = "Admin", AuthenticationSchemes = "Bearer")]
 		public IActionResult CreateLesson([FromQuery] Guid courseId, [FromBody] LessonDto lesson) {
 			if (!this._courseRepository.CourseExists(courseId)) {
 				ModelState.AddModelError("", "The course does not exist");
@@ -75,6 +79,7 @@ namespace course_api.Controllers {
 		}
 
 		[HttpPut]
+		[Authorize(Roles = "Admin", AuthenticationSchemes = "Bearer")]
 		public IActionResult UpdateLesson([FromQuery] Guid lessonId, [FromQuery] Guid courseId, [FromBody] LessonDto lesson) {
 			if (lessonId != lesson.Id) {
 				ModelState.AddModelError("", "The lessonId from query does not match the body id");
@@ -107,6 +112,7 @@ namespace course_api.Controllers {
 		}
 
 		[HttpDelete("{lessonId}")]
+		[Authorize(Roles = "Admin", AuthenticationSchemes = "Bearer")]
 		public IActionResult DeleteLesson(Guid lessonId) {
 			if (!this._lessonRepository.LessonExists(lessonId)) {
 				ModelState.AddModelError("", "The lesson does not exist");
@@ -130,6 +136,7 @@ namespace course_api.Controllers {
 		}
 
 		[HttpPost("recordings")]
+		[Authorize(Roles = "Admin", AuthenticationSchemes = "Bearer")]
 		public IActionResult CreateRecording([FromQuery] Guid lessonId, IFormFile recordingFile) {
 			if (!this._lessonRepository.LessonExists(lessonId)) {
 				ModelState.AddModelError("", "The lesson does not exist");
@@ -160,6 +167,7 @@ namespace course_api.Controllers {
 		}
 
 		[HttpDelete("recordings/{recordingId}")]
+		[Authorize(Roles = "Admin", AuthenticationSchemes = "Bearer")]
 		public IActionResult DeleteRecording(Guid recordingId) {
 			if (!this._recordingRepository.RecordingExists(recordingId)) {
 				ModelState.AddModelError("", "The recording does not exist");

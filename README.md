@@ -34,7 +34,7 @@ Tabela de conteúdos
 
 - [x] Cadastro de usuário
 - [x] Autenticação
-- [ ] Recursos do administrador
+- [x] Recursos do administrador
 - [ ] Recuperação de senha
 - [x] Upload de avatar
 - [x] Perfil do usuário

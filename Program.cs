@@ -85,6 +85,14 @@ builder.Services
 	.AddEntityFrameworkStores<DataContext>()
 	.AddDefaultTokenProviders();
 
+var identityBuilder = builder.Services.AddIdentityCore<ApplicationUser>((options) => {
+	options.User.RequireUniqueEmail = true;
+});
+identityBuilder = new IdentityBuilder(identityBuilder.UserType, builder.Services);
+identityBuilder
+	.AddEntityFrameworkStores<DataContext>()
+	.AddDefaultTokenProviders();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

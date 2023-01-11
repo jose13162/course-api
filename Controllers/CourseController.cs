@@ -6,6 +6,7 @@ using AutoMapper;
 using course_api.Dto;
 using course_api.Interface;
 using course_api.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace course_api.Controllers {
@@ -27,6 +28,7 @@ namespace course_api.Controllers {
 		}
 
 		[HttpGet]
+		[Authorize]
 		public IActionResult GetCourses() {
 			var courses = this._courseRepository.GetCourses();
 			var mappedCourses = this._mapper.Map<ICollection<CourseDto>>(courses);
@@ -35,6 +37,7 @@ namespace course_api.Controllers {
 		}
 
 		[HttpGet("{courseId}")]
+		[Authorize]
 		public IActionResult GetCourse(Guid courseId) {
 			if (!this._courseRepository.CourseExists(courseId)) {
 				return NotFound();
@@ -47,6 +50,7 @@ namespace course_api.Controllers {
 		}
 
 		[HttpPost]
+		[Authorize(Roles = "Admin", AuthenticationSchemes = "Bearer")]
 		public IActionResult CreateCourse([FromBody] CourseDto course) {
 			var mappedCourse = this._mapper.Map<Course>(course);
 
@@ -60,6 +64,7 @@ namespace course_api.Controllers {
 		}
 
 		[HttpPut]
+		[Authorize(Roles = "Admin", AuthenticationSchemes = "Bearer")]
 		public IActionResult UpdateCourse([FromQuery] Guid courseId, [FromBody] CourseDto course) {
 			if (courseId != course.Id) {
 				ModelState.AddModelError("", "The lessonId from query does not match the body id");
@@ -85,6 +90,7 @@ namespace course_api.Controllers {
 		}
 
 		[HttpDelete("{courseId}")]
+		[Authorize(Roles = "Admin", AuthenticationSchemes = "Bearer")]
 		public IActionResult DeleteCourse(Guid courseId) {
 			if (!this._courseRepository.CourseExists(courseId)) {
 				return NotFound();
@@ -106,6 +112,7 @@ namespace course_api.Controllers {
 		}
 
 		[HttpPost("categories")]
+		[Authorize(Roles = "Admin", AuthenticationSchemes = "Bearer")]
 		public IActionResult AddCategory(Guid courseId, Guid categoryId) {
 			if (!this._courseRepository.CourseExists(courseId)) {
 				ModelState.AddModelError("", "The course does not exist");
@@ -136,6 +143,7 @@ namespace course_api.Controllers {
 		}
 
 		[HttpDelete("categories")]
+		[Authorize(Roles = "Admin", AuthenticationSchemes = "Bearer")]
 		public IActionResult RemoveCategory([FromQuery] Guid courseId, [FromQuery] Guid categoryId) {
 			if (!this._courseRepository.CourseExists(courseId)) {
 				ModelState.AddModelError("", "The course does not exist");
@@ -162,6 +170,7 @@ namespace course_api.Controllers {
 		}
 
 		[HttpPost("cover")]
+		[Authorize(Roles = "Admin", AuthenticationSchemes = "Bearer")]
 		public IActionResult CreateCover([FromQuery] Guid courseId, IFormFile coverFile) {
 			if (!this._courseRepository.CourseExists(courseId)) {
 				ModelState.AddModelError("", "The course does not exist");
@@ -192,6 +201,7 @@ namespace course_api.Controllers {
 		}
 
 		[HttpDelete("cover/{coverId}")]
+		[Authorize(Roles = "Admin", AuthenticationSchemes = "Bearer")]
 		public IActionResult DeleteCover(Guid coverId) {
 			if (!this._coverRepository.CoverExists(coverId)) {
 				ModelState.AddModelError("", "The cover does not exist");
