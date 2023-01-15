@@ -7,8 +7,10 @@ using System.Net.Mail;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using AutoMapper;
 using course_api.Dto;
+using course_api.Helper;
 using course_api.Interface;
 using course_api.Models;
 using course_api.Validators.User;
@@ -236,6 +238,50 @@ namespace course_api.Controllers {
 			}
 
 			this._fileUploader.Delete(avatar.FileName);
+
+			return Ok();
+		}
+
+		[HttpPost("forgot-password")]
+		public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordValidator body) {
+			var user = await this._userManager.FindByEmailAsync(body.Email);
+
+			if (user == null) {
+				return BadRequest();
+			}
+
+			var isEmailConfirmed = await this._userManager.IsEmailConfirmedAsync(user);
+
+			if (!isEmailConfirmed) {
+				ModelState.AddModelError("", "The user's email must be confirmed");
+
+				return StatusCode(403, ModelState);
+			}
+
+			var token = await this._userManager.GeneratePasswordResetTokenAsync(user);
+
+			var url = $"{body.RedirectUrl.TrimEnd('/')}/?email={user.Email}&token={HttpUtility.UrlEncode(token)}";
+			var message = new MailMessage() {
+				To = { user.Email },
+				Subject = "Password Reset",
+				Body = $"<p>Ignore this email if you did not try to reset your password</p><br /><a href=\"{url}\">Reset Password<a/>",
+				IsBodyHtml = true
+			};
+
+			this._emailSender.Send(message);
+
+			return Ok(token);
+		}
+
+		[HttpPut("change-password")]
+		public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordValidator body) {
+			var user = await this._userManager.FindByEmailAsync(body.Email);
+
+			var changePasswordResult = await this._userManager.ResetPasswordAsync(user, HttpUtility.UrlDecode(body.Token), body.NewPassword);
+
+			if (!changePasswordResult.Succeeded) {
+				return BadRequest(changePasswordResult.Errors);
+			}
 
 			return Ok();
 		}
