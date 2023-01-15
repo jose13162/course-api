@@ -9,8 +9,8 @@
   <img src="https://img.shields.io/badge/EntityFrameworkCore-v7-purple" />
 </div>
 
-<h4 align="center"> 
-  🚧 Em desenvolvimento 🚧 
+<h4 align="center"> 🚀
+  🚀 Finalizado 🚀 
 </h4>
 
 <div id="tabela-de-conteudos"></div>
@@ -35,7 +35,7 @@ Tabela de conteúdos
 - [x] Cadastro de usuário
 - [x] Autenticação
 - [x] Recursos do administrador
-- [ ] Recuperação de senha
+- [x] Recuperação de senha
 - [x] Upload de avatar
 - [x] Perfil do usuário
 - [x] CRUD de cursos
