@@ -9,7 +9,7 @@
   <img src="https://img.shields.io/badge/EntityFrameworkCore-v7-purple" />
 </div>
 
-<h4 align="center"> 🚀
+<h4 align="center">
   🚀 Finalizado 🚀 
 </h4>
 
